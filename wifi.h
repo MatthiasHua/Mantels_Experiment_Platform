@@ -11,6 +11,8 @@ class Wifi {
       String get_access_key();
       String get_student_key(String ak);
       String get_student_key_status(String sk);
+      String get_test_case(String ak, String sk);
+      String post_result(String ak, String sk);
       String get(String url);
       String post(String data, String url);
   private:
@@ -18,7 +20,7 @@ class Wifi {
       char *password;
       char *host = "mantels.top";
       int port = 80;
-      //char *host = "192.168.1.109";
+      //char *host = "192.168.1.102";
       //int port = 5000;
 };
 

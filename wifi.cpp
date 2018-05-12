@@ -2,10 +2,10 @@
 
 Wifi::Wifi() {
     Serial.begin(9600);
-    //ssid = "MERCURY_304";
-    //password = "@sls304@";
-    ssid = "Vento";
-    password = "0123456789";
+    ssid = "MERCURY_304";
+    password = "@sls304@";
+    //ssid = "Vento";
+    //password = "0123456789";
     WiFi.begin(ssid, password);
     while(WiFi.status() != WL_CONNECTED) {
         delay(500);
@@ -15,11 +15,34 @@ Wifi::Wifi() {
     Serial.println(WiFi.localIP());
 }
 
+String Wifi::get_test_case(String ak, String sk) {
+    JSON json;
+    json.reset();
+    json.add("access key", ak);
+    json.add("student key", sk);
+    json.add("device name", "test-device-1");
+    String data = json.get();
+    String returndata = post(data, "/api/get/current_experiment/test_case");
+    return returndata;
+}
+
+String Wifi::post_result(String ak, String sk) {
+    JSON json;
+    json.reset();
+    json.add("access key", ak);
+    json.add("student key", sk);
+    json.add("device name", "test-device-1");
+    json.add("content", "啦啦啦~");
+    String data = json.get();
+    String returndata = post(data, "/api/experiment/new_result_iot");
+    return returndata;
+}
+
 String Wifi::get_access_key() {
     JSON json;
     json.reset();
     json.add("number", 123);
-    json.add("token", "j9JX9yxTHSACue7t");
+    json.add("token", "kxqvE0WYfh69jUMf");
     json.add("device name", "test-device-1");
     json.add("time", 7200);
     String data = json.get();

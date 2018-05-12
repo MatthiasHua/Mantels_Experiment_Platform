@@ -29,6 +29,8 @@ int testOption2(Menu *m);
 int testOption3(Menu *m);
 int get_access_key(Menu *m);
 int get_student_key_status(Menu *m);
+int post_result(Menu *m);
+int get_test_case(Menu *m);
 
 void setup()
 {
@@ -46,6 +48,8 @@ void setup()
     menu -> addOption("get accesskey", get_access_key);
     menu -> addOption("get studentkey", get_student_key);
     menu -> addOption("get studentkey status", get_student_key_status);
+    menu -> addOption("post result", post_result);
+    menu -> addOption("get test case", get_test_case);
 }
 
 void loop()
@@ -119,8 +123,6 @@ int get_access_key(Menu *m) {
     display -> setCursor(0, 0);
     access_key = ak.substring(ak.lastIndexOf('\n') + 1);
     display -> println(access_key);
-    //Serial.println(ak.lastIndexOf('\n'));
-    //Serial.println(ak.substring(ak.lastIndexOf('\n')));
     display -> update();
     while(1) {
         keyboard -> update(key);
@@ -144,8 +146,6 @@ int get_student_key(Menu *m) {
     display -> setCursor(0, 0);
     student_key = sk.substring(sk.lastIndexOf('\n') + 1);
     display -> println(student_key);
-    //Serial.println(ak.lastIndexOf('\n'));
-    //Serial.println(ak.substring(ak.lastIndexOf('\n')));
     display -> update();
     while(1) {
         keyboard -> update(key);
@@ -169,8 +169,52 @@ int get_student_key_status(Menu *m) {
     display -> setCursor(0, 0);
     student_key = s.substring(s.lastIndexOf('\n') + 1);
     display -> println(student_key);
-    //Serial.println(ak.lastIndexOf('\n'));
-    //Serial.println(ak.substring(ak.lastIndexOf('\n')));
+    display -> update();
+    while(1) {
+        keyboard -> update(key);
+        delay(40);
+        if (key[5] == 1) {
+            return 1;
+        }
+    }
+    return 1;
+};
+
+int post_result(Menu *m) {
+    int key[num_key];
+    display -> clear();
+    display -> setTextColor(WHITE, BLACK);
+    display -> setCursor(0, 0);
+    display -> println("posting result...");
+    display -> update();
+    String s = wifi -> post_result(access_key, student_key);
+    display -> clear();
+    display -> setCursor(0, 0);
+    student_key = s.substring(s.lastIndexOf('\n') + 1);
+    display -> println(student_key);
+    display -> update();
+    while(1) {
+        keyboard -> update(key);
+        delay(40);
+        if (key[5] == 1) {
+            return 1;
+        }
+    }
+    return 1;
+};
+
+int get_test_case(Menu *m) {
+    int key[num_key];
+    display -> clear();
+    display -> setTextColor(WHITE, BLACK);
+    display -> setCursor(0, 0);
+    display -> println("getting test case...");
+    display -> update();
+    String s = wifi -> get_test_case(access_key, student_key);
+    display -> clear();
+    display -> setCursor(0, 0);
+    student_key = s.substring(s.lastIndexOf('\n') + 1);
+    display -> println(student_key);
     display -> update();
     while(1) {
         keyboard -> update(key);
