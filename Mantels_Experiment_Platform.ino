@@ -31,6 +31,7 @@ int get_access_key(Menu *m);
 int get_student_key_status(Menu *m);
 int post_result(Menu *m);
 int get_test_case(Menu *m);
+int get_student_result(Menu *m);
 
 void setup()
 {
@@ -40,7 +41,7 @@ void setup()
     menu = new Menu(display);
     keyboard = new Keyboard(KB_CLK, KB_SH, KB_QH);
     out = new Out(O_RCLK, O_SRCLK, O_SER);
-    wifi = new Wifi();
+    //wifi = new Wifi();
     delay(2000);
     menu -> addOption("show LOGO", showlogo);
     menu -> addOption("input test", testOption2);
@@ -50,6 +51,7 @@ void setup()
     menu -> addOption("get studentkey status", get_student_key_status);
     menu -> addOption("post result", post_result);
     menu -> addOption("get test case", get_test_case);
+    menu -> addOption("test exp", get_student_result);
 }
 
 void loop()
@@ -225,3 +227,47 @@ int get_test_case(Menu *m) {
     }
     return 1;
 };
+
+void check(int input_table[], int output_table[], int num) {
+    int key[num_key]; 
+    for (int i = 0; i < num; i++) {
+        int data = 0;
+        for (int j = 0; j < 8; j++) {
+            data = data * 2 + input_table[i * 8 + j];
+        }
+        out -> output_byte(data);
+        delay(5);
+        keyboard -> update(key);
+        for (int j = 0; j < 8; j++) {
+            output_table[i * 8 + j] = (key[8 + j] + 1) % 2;
+        }
+        delay(5);
+    }
+    
+}
+
+int get_student_result(Menu *m) {
+    int key[num_key];
+    int input_table[32] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1};
+    int output_table[32];
+    int num = 4;
+    check(input_table, output_table, num);
+    display -> clear();
+    display -> setTextColor(WHITE, BLACK);
+    for (int i = 0; i < num; i++) {
+        for (int j = 0; j < 8; j++) {
+            display -> setCursor(j * 10, i * 10);
+            display -> println(output_table[i * 8 + j]);
+        }
+    }
+    display -> update();
+    while(1) {
+        keyboard -> update(key);
+        delay(40);
+        if (key[5] == 1) {
+            return 1;
+        }
+    }
+    return 1;
+}
+
