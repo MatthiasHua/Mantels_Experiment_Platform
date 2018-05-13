@@ -28,13 +28,13 @@ String Wifi::get_test_case(String ak, String sk) {
     return returndata;
 }
 
-String Wifi::post_result(String ak, String sk) {
+String Wifi::post_result(String ak, String sk, String post_data) {
     JSON json;
     json.reset();
     json.add("access key", ak);
     json.add("student key", sk);
     json.add("device name", Device_Name);
-    json.add("content", "啦啦啦~");
+    json.add("content", post_data);
     String data = json.get();
     String returndata = post(data, "/api/experiment/new_result_iot");
     return returndata;
