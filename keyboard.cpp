@@ -1,9 +1,9 @@
 #include "keyboard.h"
 
-Keyboard::Keyboard(int KB_CLK, int KB_SH, int KB_QH ) {
-    CLK = KB_CLK;
-    SH = KB_SH;
-    QH = KB_QH;
+Keyboard::Keyboard(int kb_CLK, int kb_SH, int kb_QH ) {
+    CLK = kb_CLK;
+    SH = kb_SH;
+    QH = kb_QH;
     pinMode(SH, OUTPUT);
     pinMode(CLK, OUTPUT);
     pinMode(QH, INPUT);

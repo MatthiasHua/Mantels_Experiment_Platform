@@ -1,18 +1,20 @@
 #include "wifi.h"
-
-Wifi::Wifi() {
-    Serial.begin(9600);
-    ssid = "MERCURY_304";
-    password = "@sls304@";
-    //ssid = "Vento";
-    //password = "0123456789";
+#include "config.h"
+Wifi::Wifi(int debug_mode) {
+    debug = debug_mode;
+    if (debug == 1)
+        Serial.begin(9600);
+    ssid = dSSID;
+    password = dPASSWORD;
+    log_s(ssid);
+    log_s(password);
     WiFi.begin(ssid, password);
     while(WiFi.status() != WL_CONNECTED) {
         delay(500);
-        Serial.print(".");
+        log_s(".");
     }
-    Serial.println("");
-    Serial.println(WiFi.localIP());
+    log_s("");
+    log_s(WiFi.localIP());
 }
 
 String Wifi::get_test_case(String ak, String sk) {
@@ -31,7 +33,7 @@ String Wifi::post_result(String ak, String sk) {
     json.reset();
     json.add("access key", ak);
     json.add("student key", sk);
-    json.add("device name", "test-device-1");
+    json.add("device name", Device_Name);
     json.add("content", "啦啦啦~");
     String data = json.get();
     String returndata = post(data, "/api/experiment/new_result_iot");
@@ -41,9 +43,9 @@ String Wifi::post_result(String ak, String sk) {
 String Wifi::get_access_key() {
     JSON json;
     json.reset();
-    json.add("number", 123);
-    json.add("token", "kxqvE0WYfh69jUMf");
-    json.add("device name", "test-device-1");
+    json.add("number", Number);
+    json.add("token", Token);
+    json.add("device name", Device_Name);
     json.add("time", 7200);
     String data = json.get();
     String returndata = post(data, "/api/access_key_iot");
@@ -65,29 +67,39 @@ String Wifi::get_student_key_status(String sk) {
     return data;
 }
 
+void Wifi::log_s(String s) {
+    if (debug == 1)
+        Serial.print(s);
+}
+
+void Wifi::log_s(IPAddress s) {
+    if (debug == 1)
+        Serial.print(s);
+}
+
 String Wifi::get(String url) {
-    Serial.print("connecting to ");  
-    Serial.println(host);  
+    log_s("connecting to ");  
+    log_s(host);  
     
     WiFiClient client;  
     
     if (!client.connect(host, port)) {  
-        Serial.println("connection failed");  
+        log_s("connection failed");  
         return "";
     }  
-    Serial.println("connection success");  
+    log_s("connection success");  
 
     String getRequest =(String)("GET ") + url + " HTTP/1.1\r\n" +  
           "Host: " + host + ":" + port + "\r\n" +              
           "Connection: close\r\n\r\n";  
-     Serial.println(getRequest);  
+     log_s(getRequest);  
      client.print(getRequest);  
      while (client.connected()) {
         if (client.available()) {
             String data = client.readString();
-            Serial.println(data);
+            log_s(data);
             client.stop();
-            Serial.println("end of client");
+            log_s("end of client");
             return data;
         }
      }
@@ -95,16 +107,16 @@ String Wifi::get(String url) {
 }
 
 String Wifi::post(String data, String url) {
-    Serial.print("connecting to ");  
-    Serial.println(host);  
+    log_s("connecting to ");  
+    log_s(host);  
     
     WiFiClient client;  
     
     if (!client.connect(host, port)) {  
-        Serial.println("connection failed");  
+        log_s("connection failed");  
         return "";
     }  
-    Serial.println("connection success");  
+    log_s("connection success");  
     int length = data.length(); 
     String postRequest =(String)("POST ") + url + " HTTP/1.1\r\n" +  
           "Content-Type: application/json;charset=utf-8\r\n" +  
@@ -112,14 +124,14 @@ String Wifi::post(String data, String url) {
           "Content-Length: " + length + "\r\n" +  
           "Connection: Keep Alive\r\n\r\n" +  
           data+"\r\n";  
-     Serial.println(postRequest);  
+     log_s(postRequest);  
      client.print(postRequest);  
      while (client.connected()) {
         if (client.available()) {
             String returndata = client.readString();
-            Serial.println(returndata);
+            log_s(returndata);
             client.stop();
-            Serial.println("end of client");
+            log_s("end of client");
             return returndata;
         }
      }

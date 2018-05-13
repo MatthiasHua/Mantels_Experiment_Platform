@@ -7,7 +7,7 @@
 
 class Wifi {
   public:
-      Wifi();
+      Wifi(int debug_mode);
       String get_access_key();
       String get_student_key(String ak);
       String get_student_key_status(String sk);
@@ -15,7 +15,10 @@ class Wifi {
       String post_result(String ak, String sk);
       String get(String url);
       String post(String data, String url);
+      void log_s(String s);
+      void log_s(IPAddress s);
   private:
+      int debug;
       char *ssid;
       char *password;
       char *host = "mantels.top";

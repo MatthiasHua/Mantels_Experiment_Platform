@@ -4,17 +4,7 @@
 #include "keyboard.h"
 #include "output.h"
 #include "wifi.h"
-/*
- * 针脚定义
- */
-#define SDA_PIN 13// OLED SDA
-#define SCL_PIN 12 // OLED SCL
-#define KB_CLK 4
-#define KB_SH 5
-#define KB_QH 14
-#define O_RCLK 3
-#define O_SRCLK 1
-#define O_SER 9
+#include "config.h"
 
 Adafruit_ssd1306syp *display;
 Menu *menu;
@@ -32,6 +22,7 @@ int get_student_key_status(Menu *m);
 int post_result(Menu *m);
 int get_test_case(Menu *m);
 int get_student_result(Menu *m);
+int start_experiment(Menu *m);
 
 void setup()
 {
@@ -41,9 +32,10 @@ void setup()
     menu = new Menu(display);
     keyboard = new Keyboard(KB_CLK, KB_SH, KB_QH);
     out = new Out(O_RCLK, O_SRCLK, O_SER);
-    //wifi = new Wifi();
+    wifi = new Wifi(DEBUG);
     delay(2000);
     menu -> addOption("show LOGO", showlogo);
+    menu -> addOption("start experiment", start_experiment);
     menu -> addOption("input test", testOption2);
     menu -> addOption("output test", testOption3);
     menu -> addOption("get accesskey", get_access_key);
@@ -61,6 +53,123 @@ void loop()
     menu -> operate(key);
     menu -> drawMenu();
 }
+
+int start_experiment(Menu *m) {
+    int key[num_key];
+    int flag = login();
+    if (flag == 0)
+        return 0;
+    do_experiment();
+    return 1;
+}
+
+int login() {
+    int key[num_key];
+    int flag = get_access_key();
+    if (flag == 0)
+        return 0;
+    flag = get_student_key();
+    if (flag == 0)
+        return 0;    
+    while(flag == 1) {
+        keyboard -> update(key);
+        if (key[KB_Cancel] == 1)
+            return 1;
+        delay(40);
+        flag = get_student_key_status();
+    }
+    display -> clear();
+    display -> setTextColor(WHITE, BLACK);
+    display -> setCursor(0, 0);
+    display -> println("log in success");
+    display -> update();
+    delay(1000);
+    return 1;
+}
+
+int do_experiment() {
+    int key[num_key];
+    int em_cursor = 0;
+    while(1) {
+        int date = 0;
+        drawExperimentMenu(em_cursor);
+        keyboard -> update(key);
+        for (int i = 0; i < Order_Bits; i++)
+            date = date * 2 + key[Toggle_Switch_Address + i];
+        out -> output_byte(date);
+        delay(40);
+        if (key[KB_Cancel] == 1) {
+            return 1;
+        } else if (key[KB_Up] == 1) {
+            em_cursor = 0;
+        }
+        else if (key[KB_Down] == 1) {
+            em_cursor = 1;     
+        }
+    }
+    return 1;
+}
+
+int get_access_key() {
+    display -> clear();
+    display -> setTextColor(WHITE, BLACK);
+    display -> setCursor(0, 0);
+    display -> println("logging ...");
+    display -> update();
+    String ak = wifi -> get_access_key();
+    access_key = ak.substring(ak.lastIndexOf('\n') + 1);
+    return 1;
+};
+
+int get_student_key() {
+    display -> clear();
+    display -> setTextColor(WHITE, BLACK);
+    display -> setCursor(0, 0);
+    display -> println("logging ...");
+    display -> update();
+    String sk = wifi -> get_student_key(access_key);
+    display -> clear();
+    display -> setCursor(12, 0);
+    student_key = sk.substring(sk.lastIndexOf('\n') + 1);
+    display -> println("Please login with    WeChat.");
+    display -> setCursor(46, 30);
+    display -> println(student_key);
+    display -> drawRect(40, 25, 48, 18, WHITE);
+    display -> update();
+    return 1;
+};
+
+void drawExperimentMenu(int cursor) {
+    display -> clear();
+    display -> setCursor(25, 12);
+    if (cursor == 0) {
+        display -> fillRect(20, 7, 88, 18, WHITE);
+        display -> setTextColor(BLACK, WHITE); 
+    } else {
+        display -> drawRect(20, 7, 88, 18, WHITE);
+        display -> setTextColor(WHITE, BLACK); 
+    }
+    display -> println("do experiment");
+    display -> setCursor(28, 36);
+    if (cursor == 1) {
+        display -> fillRect(20, 31, 88, 18, WHITE);
+        display -> setTextColor(BLACK, WHITE); 
+    } else {
+        display -> drawRect(20, 31, 88, 18, WHITE);
+        display -> setTextColor(WHITE, BLACK); 
+    }
+    display -> println("check result");
+    display -> update();
+}
+
+int get_student_key_status() {
+    String s = wifi -> get_student_key_status(student_key);
+    String sk_status = s.substring(s.lastIndexOf('\n') + 1);
+    if (sk_status == "enable")
+        return 2;
+    else
+        return 1;
+};
 
 int showlogo(Menu *m) {
     int key[num_key];
@@ -169,8 +278,8 @@ int get_student_key_status(Menu *m) {
     String s = wifi -> get_student_key_status(student_key);
     display -> clear();
     display -> setCursor(0, 0);
-    student_key = s.substring(s.lastIndexOf('\n') + 1);
-    display -> println(student_key);
+    String sk_status = s.substring(s.lastIndexOf('\n') + 1);
+    display -> println(sk_status);
     display -> update();
     while(1) {
         keyboard -> update(key);
@@ -270,4 +379,5 @@ int get_student_result(Menu *m) {
     }
     return 1;
 }
+
 

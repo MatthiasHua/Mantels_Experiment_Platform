@@ -61,13 +61,13 @@ void Menu::drawMenu() {
 }
 
 void Menu::operate(int key[]) {
-    if (key[2] == 1) {
+    if (key[KB_Down] == 1) {
         cursor ++;
     }
-    else if (key[0] == 1) {
+    else if (key[KB_Up] == 1) {
         cursor --;
     }
-    else if (key[4] == 1) {
+    else if (key[KB_Enter] == 1) {
         pf_options[cursor](this);
     }
     cursor = (cursor + num_options) % num_options;

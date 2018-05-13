@@ -2,6 +2,7 @@
 #define manu_h
 #define max_options_one_screen 5
 #include <Adafruit_ssd1306syp.h> 
+#include "config.h"
 
 class Menu;
 typedef int (*PF)(Menu*);

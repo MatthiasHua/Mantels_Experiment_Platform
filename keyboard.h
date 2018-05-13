@@ -14,7 +14,7 @@
  */
 class Keyboard {
     public:
-        Keyboard(int KB_CLK, int KB_SH, int KB_QH);
+        Keyboard(int kb_CLK, int kb_SH, int kb_QH);
         void update();
         void update(int r_key[]);
         unsigned char read_165();

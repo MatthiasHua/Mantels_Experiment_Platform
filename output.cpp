@@ -1,9 +1,9 @@
 #include "output.h"
 
-Out::Out(int O_RCLK, int O_SRCLK, int O_SER) {
-    RCLK = O_RCLK;
-    SRCLK = O_SRCLK;
-    SER = O_SER;
+Out::Out(int o_RCLK, int o_SRCLK, int o_SER) {
+    RCLK = o_RCLK;
+    SRCLK = o_SRCLK;
+    SER = o_SER;
     pinMode(RCLK, OUTPUT);
     pinMode(SRCLK, OUTPUT);
     pinMode(SER, OUTPUT);

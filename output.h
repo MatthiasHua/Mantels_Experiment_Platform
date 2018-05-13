@@ -4,7 +4,7 @@
 
 class Out {
   public:
-      Out(int O_RCLK, int O_SRCLK, int O_SER);
+      Out(int o_RCLK, int o_SRCLK, int o_SER);
       void output_byte(unsigned char date);
   private:
       int RCLK;
