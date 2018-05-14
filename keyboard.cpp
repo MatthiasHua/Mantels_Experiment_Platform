@@ -27,7 +27,7 @@ void Keyboard::update() {
     digitalWrite(SH,HIGH);
     digitalWrite(SH,LOW);
     digitalWrite(SH,HIGH);
-    for (int i = 0; i < num_key; i++){
+    for (int i = 0; i < num_input; i++){
         if (i % 8 == 0)
           date = read_165();
         key[i] = (date + 1) % 2;
@@ -45,7 +45,7 @@ void Keyboard::update() {
 
 void Keyboard::update(int r_key[]) {
     update();
-    for (int i = 0; i < num_key; i++) {
+    for (int i = 0; i < num_input; i++) {
         r_key[i] = key[i];
     }
 }

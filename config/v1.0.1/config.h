@@ -39,7 +39,7 @@
 
 //位数
 #define Order_Bits 8
-
+#define num_input 32
 //键盘
 //首地址
 #define Keyboard_Address 8
@@ -56,6 +56,7 @@
 
 //LED灯 首地址
 #define LED_Address 16
+
 //钮子开关 首地址
 #define Toggle_Switch_Address 8
 

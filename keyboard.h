@@ -1,8 +1,7 @@
 #ifndef keyboard_h
 #define keyboard_h
 #include <Adafruit_ssd1306syp.h> 
-
-#define num_key 24
+#include "config.h"
 
 /*
  * up     0
@@ -19,7 +18,7 @@ class Keyboard {
         void update(int r_key[]);
         unsigned char read_165();
     private:
-        int key[num_key];
+        int key[num_input];
         int key_cache[8];
         int CLK;
         int SH;

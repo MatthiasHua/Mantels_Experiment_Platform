@@ -48,14 +48,14 @@ void setup()
 
 void loop()
 {
-    int key[num_key];
+    int key[num_input];
     keyboard -> update(key);
     menu -> operate(key);
     menu -> drawMenu();
 }
 
 int start_experiment(Menu *m) {
-    int key[num_key];
+    int key[num_input];
     int flag = login();
     if (flag == 0)
         return 0;
@@ -64,7 +64,7 @@ int start_experiment(Menu *m) {
 }
 
 int login() {
-    int key[num_key];
+    int key[num_input];
     int flag = get_access_key();
     if (flag == 0)
         return 0;
@@ -88,7 +88,7 @@ int login() {
 }
 
 int do_experiment() {
-    int key[num_key];
+    int key[num_input];
     int em_cursor = 0;
     while(1) {
         int date = 0;
@@ -174,7 +174,7 @@ int get_student_key_status() {
 };
 
 void check_experiment() {
-    int key[num_key];
+    int key[num_input];
     int input_table[32];
     int output_table[32];
     int num = 4;
@@ -198,25 +198,27 @@ void check_experiment() {
     }
     //delay(1000);
     check(input_table, output_table, num);
-    display -> clear();
+    /*display -> clear();
     display -> setTextColor(WHITE, BLACK);
     for (int i = 0; i < num; i++) {
         for (int j = 0; j < 8; j++) {
             display -> setCursor(j * 10, i * 10);
             display -> println(output_table[i * 8 + j]);
         }
-    }
+    }*/
     for (int i = 0; i < num; i++) {
         returndata += String(input_table[i * 8 + 6]) + "-" + String(input_table[i * 8 + 7]) + "-" +  String(output_table[i * 8 + 6]) + "-" + String(output_table[i * 8 + 7]) + ((i != num - 1) ? "~" : "");
-        for (int j = 0; j < 8; j++) {
-            display -> setCursor(j * 10, i * 10);
-            display -> println(output_table[i * 8 + j]);
-        }
+        //for (int j = 0; j < 8; j++) {
+        //    display -> setCursor(j * 10, i * 10);
+        //    display -> println(output_table[i * 8 + j]);
+        //}
     }
+    /*
     display -> setCursor(0, 50);
     display -> println(returndata);
     display -> update();
     delay(3000);
+    */
     post_result(returndata);
     while(1) {
         keyboard -> update(key);
@@ -229,7 +231,7 @@ void check_experiment() {
 }
 
 void post_result(String data) {
-    int key[num_key];
+    int key[num_input];
     display -> clear();
     display -> setTextColor(WHITE, BLACK);
     display -> setCursor(0, 0);
@@ -251,7 +253,7 @@ void post_result(String data) {
 };
 
 int showlogo(Menu *m) {
-    int key[num_key];
+    int key[num_input];
     while(1) {
         keyboard -> update(key);
         m -> drawLOGO();
@@ -263,7 +265,7 @@ int showlogo(Menu *m) {
 };
 
 int testOption2(Menu *m) {
-    int key[num_key];
+    int key[num_input];
     while(1) {
         keyboard -> update(key);
         display -> clear();
@@ -285,7 +287,7 @@ int testOption2(Menu *m) {
 
 
 int testOption3(Menu *m) {
-    int key[num_key];
+    int key[num_input];
     while(1) {
         int date = 0;
         keyboard -> update(key);
@@ -302,7 +304,7 @@ int testOption3(Menu *m) {
 };
 
 int get_access_key(Menu *m) {
-    int key[num_key];
+    int key[num_input];
     display -> clear();
     display -> setTextColor(WHITE, BLACK);
     display -> setCursor(0, 0);
@@ -325,7 +327,7 @@ int get_access_key(Menu *m) {
 };
 
 int get_student_key(Menu *m) {
-    int key[num_key];
+    int key[num_input];
     display -> clear();
     display -> setTextColor(WHITE, BLACK);
     display -> setCursor(0, 0);
@@ -348,7 +350,7 @@ int get_student_key(Menu *m) {
 };
 
 int get_student_key_status(Menu *m) {
-    int key[num_key];
+    int key[num_input];
     display -> clear();
     display -> setTextColor(WHITE, BLACK);
     display -> setCursor(0, 0);
@@ -371,7 +373,7 @@ int get_student_key_status(Menu *m) {
 };
 
 int post_result(Menu *m) {
-    int key[num_key];
+    int key[num_input];
     display -> clear();
     display -> setTextColor(WHITE, BLACK);
     display -> setCursor(0, 0);
@@ -394,7 +396,7 @@ int post_result(Menu *m) {
 };
 
 int get_test_case(Menu *m) {
-    int key[num_key];
+    int key[num_input];
     display -> clear();
     display -> setTextColor(WHITE, BLACK);
     display -> setCursor(0, 0);
@@ -417,7 +419,7 @@ int get_test_case(Menu *m) {
 };
 
 void check(int input_table[], int output_table[], int num) {
-    int key[num_key]; 
+    int key[num_input]; 
     for (int i = 0; i < num; i++) {
         int data = 0;
         for (int j = 0; j < 8; j++) {
@@ -427,7 +429,7 @@ void check(int input_table[], int output_table[], int num) {
         delay(5);
         keyboard -> update(key);
         for (int j = 0; j < 8; j++) {
-            output_table[i * 8 + j] = (key[8 + j] + 1) % 2;
+            output_table[i * 8 + j] = (key[LED_Address + j] + 1) % 2;
         }
         delay(5);
     }
@@ -435,7 +437,7 @@ void check(int input_table[], int output_table[], int num) {
 }
 
 int get_student_result(Menu *m) {
-    int key[num_key];
+    int key[num_input];
     int input_table[32] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1};
     int output_table[32];
     int num = 4;

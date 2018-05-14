@@ -21,7 +21,7 @@
 //硬件配置
 //根据所选硬件平台配置
 
-//Mantels Experimente Platform v1.0.0
+//Mantels Experimente Platform v1.0.1
 
 //OLED屏 引脚
 #define SDA_PIN 13// OLED SDA
@@ -35,11 +35,11 @@
 //输出 引脚
 #define O_RCLK 3
 #define O_SRCLK 1
-#define O_SER 9
+#define O_SER 16
 
 //位数
 #define Order_Bits 8
-
+#define num_input 32
 //键盘
 //首地址
 #define Keyboard_Address 8
@@ -55,9 +55,10 @@
 #define KB_Cancel 5
 
 //LED灯 首地址
-#define LED_Address 8
+#define LED_Address 16
+
 //钮子开关 首地址
-#define Toggle_Switch_Address 16
+#define Toggle_Switch_Address 8
 
 //==================================
 
