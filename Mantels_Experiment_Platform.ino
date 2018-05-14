@@ -5,6 +5,7 @@
 #include "output.h"
 #include "wifi.h"
 #include "config.h"
+#include "qrcode.h"
 
 Adafruit_ssd1306syp *display;
 Menu *menu;
@@ -23,6 +24,8 @@ int post_result(Menu *m);
 int get_test_case(Menu *m);
 int get_student_result(Menu *m);
 int start_experiment(Menu *m);
+int test_qr_code(Menu *m);
+int test_qr_code2(Menu *m);
 
 void setup()
 {
@@ -44,6 +47,8 @@ void setup()
     menu -> addOption("post result", post_result);
     menu -> addOption("get test case", get_test_case);
     menu -> addOption("test exp", get_student_result);
+    menu -> addOption("QR-CODE", test_qr_code);
+    menu -> addOption("QR-CODE2", test_qr_code2);
 }
 
 void loop()
@@ -66,6 +71,9 @@ int start_experiment(Menu *m) {
 int login() {
     int key[num_input];
     int flag = get_access_key();
+    int l_cursor = 0;
+    WiFiClient client;
+    Serial.begin(9600);
     if (flag == 0)
         return 0;
     flag = get_student_key();
@@ -73,17 +81,36 @@ int login() {
         return 0;    
     while(flag == 1) {
         keyboard -> update(key);
+        drawLoginMenu(l_cursor);
         if (key[KB_Cancel] == 1)
-            return 1;
+            return 0;
+        else if (key[KB_Enter] == 1)
+            flag = 0;
+        else if (key[KB_Up] == 1)
+            l_cursor = 0;
+        else if (key[KB_Down] == 1)
+            l_cursor = 1;
         delay(40);
-        flag = get_student_key_status();
     }
-    display -> clear();
-    display -> setTextColor(WHITE, BLACK);
-    display -> setCursor(0, 0);
-    display -> println("log in success");
-    display -> update();
-    delay(1000);
+    flag = 1;
+    while(flag == 1) {
+        keyboard -> update(key);
+        flag = get_student_key_status(client);
+        draw_login_info(l_cursor);
+        if (key[KB_Cancel] == 1)
+            return 0;
+        else if (key[KB_Right] == 1)
+            l_cursor = 1;
+        else if (key[KB_Left] == 1)
+            l_cursor = 0;
+        delay(40);
+    }
+    //display -> clear();
+    //display -> setTextColor(WHITE, BLACK);
+    //display -> setCursor(0, 0);
+    //display -> println("log in success");
+    //display -> update();
+    //delay(1000);
     return 1;
 }
 
@@ -130,16 +157,47 @@ int get_student_key() {
     display -> println("logging ...");
     display -> update();
     String sk = wifi -> get_student_key(access_key);
-    display -> clear();
-    display -> setCursor(12, 0);
     student_key = sk.substring(sk.lastIndexOf('\n') + 1);
-    display -> println("Please login with    WeChat.");
-    display -> setCursor(46, 30);
-    display -> println(student_key);
-    display -> drawRect(40, 25, 48, 18, WHITE);
-    display -> update();
     return 1;
 };
+
+void draw_login_info(int login_method) {
+    if (login_method == 0) {
+        display -> clear();
+        display -> setCursor(12, 0);
+        display -> println("Please login with    WeChat.");
+        display -> setCursor(46, 30);
+        display -> println(student_key);
+        display -> drawRect(40, 25, 48, 18, WHITE);
+        display -> update();
+    } else {
+        show_QR_CODE(3, "http://mantels.top/user_base/wechat/signin/" + student_key);
+    }
+}
+
+void drawLoginMenu(int cursor) {
+    display -> clear();
+    display -> setCursor(46, 12);
+    if (cursor == 0) {
+        display -> fillRect(20, 7, 88, 18, WHITE);
+        display -> setTextColor(BLACK, WHITE); 
+    } else {
+        display -> drawRect(20, 7, 88, 18, WHITE);
+        display -> setTextColor(WHITE, BLACK); 
+    }
+    display -> println("WeChat");
+    display -> setCursor(43, 36);
+    if (cursor == 1) {
+        display -> fillRect(20, 31, 88, 18, WHITE);
+        display -> setTextColor(BLACK, WHITE); 
+    } else {
+        display -> drawRect(20, 31, 88, 18, WHITE);
+        display -> setTextColor(WHITE, BLACK); 
+    }
+    display -> println("QR Code");
+    display -> update();
+}
+
 
 void drawExperimentMenu(int cursor) {
     display -> clear();
@@ -164,8 +222,8 @@ void drawExperimentMenu(int cursor) {
     display -> update();
 }
 
-int get_student_key_status() {
-    String s = wifi -> get_student_key_status(student_key);
+int get_student_key_status(WiFiClient &client) {
+    String s = wifi -> get_student_key_status(student_key, client);
     String sk_status = s.substring(s.lastIndexOf('\n') + 1);
     if (sk_status == "enable")
         return 2;
@@ -185,40 +243,17 @@ void check_experiment() {
     display -> println("getting test case...");
     display -> update();
     String s = wifi -> get_test_case(access_key, student_key);
-    //display -> clear();
-    //display -> setCursor(0, 0);
     String test_case = s.substring(s.lastIndexOf('\n') + 1);
-    //display -> println(test_case);
-    //display -> update();
     for (int i = 0; i < num * Order_Bits; i++) {
         if (test_case[i] == '0')
             input_table[i] = 0;
         else
             input_table[i] = 1;
     }
-    //delay(1000);
     check(input_table, output_table, num);
-    /*display -> clear();
-    display -> setTextColor(WHITE, BLACK);
-    for (int i = 0; i < num; i++) {
-        for (int j = 0; j < 8; j++) {
-            display -> setCursor(j * 10, i * 10);
-            display -> println(output_table[i * 8 + j]);
-        }
-    }*/
     for (int i = 0; i < num; i++) {
         returndata += String(input_table[i * 8 + 6]) + "-" + String(input_table[i * 8 + 7]) + "-" +  String(output_table[i * 8 + 6]) + "-" + String(output_table[i * 8 + 7]) + ((i != num - 1) ? "~" : "");
-        //for (int j = 0; j < 8; j++) {
-        //    display -> setCursor(j * 10, i * 10);
-        //    display -> println(output_table[i * 8 + j]);
-        //}
     }
-    /*
-    display -> setCursor(0, 50);
-    display -> println(returndata);
-    display -> update();
-    delay(3000);
-    */
     post_result(returndata);
     while(1) {
         keyboard -> update(key);
@@ -240,8 +275,8 @@ void post_result(String data) {
     String s = wifi -> post_result(access_key, student_key, data);
     display -> clear();
     display -> setCursor(0, 0);
-    student_key = s.substring(s.lastIndexOf('\n') + 1);
-    display -> println(student_key);
+    String resultdata = s.substring(s.lastIndexOf('\n') + 1);
+    display -> println(resultdata);
     display -> update();
     while(1) {
         keyboard -> update(key);
@@ -336,7 +371,7 @@ int get_student_key(Menu *m) {
     String sk = wifi -> get_student_key(access_key);
     display -> clear();
     display -> setCursor(0, 0);
-    student_key = sk.substring(sk.lastIndexOf('\n') + 1);
+    111sk.substring(sk.lastIndexOf('\n') + 1);
     display -> println(student_key);
     display -> update();
     while(1) {
@@ -351,12 +386,13 @@ int get_student_key(Menu *m) {
 
 int get_student_key_status(Menu *m) {
     int key[num_input];
+    WiFiClient client;
     display -> clear();
     display -> setTextColor(WHITE, BLACK);
     display -> setCursor(0, 0);
     display -> println("getting student key status...");
     display -> update();
-    String s = wifi -> get_student_key_status(student_key);
+    String s = wifi -> get_student_key_status(student_key, client);
     display -> clear();
     display -> setCursor(0, 0);
     String sk_status = s.substring(s.lastIndexOf('\n') + 1);
@@ -382,8 +418,8 @@ int post_result(Menu *m) {
     String s = wifi -> post_result(access_key, student_key, "啦啦啦~");
     display -> clear();
     display -> setCursor(0, 0);
-    student_key = s.substring(s.lastIndexOf('\n') + 1);
-    display -> println(student_key);
+    String resultdata = s.substring(s.lastIndexOf('\n') + 1);
+    display -> println(resultdata);
     display -> update();
     while(1) {
         keyboard -> update(key);
@@ -405,8 +441,8 @@ int get_test_case(Menu *m) {
     String s = wifi -> get_test_case(access_key, student_key);
     display -> clear();
     display -> setCursor(0, 0);
-    student_key = s.substring(s.lastIndexOf('\n') + 1);
-    display -> println(student_key);
+    String resultdata = s.substring(s.lastIndexOf('\n') + 1);
+    display -> println(resultdata);
     display -> update();
     while(1) {
         keyboard -> update(key);
@@ -461,4 +497,63 @@ int get_student_result(Menu *m) {
     return 1;
 }
 
+int test_qr_code(Menu *m) {
+    int key[num_input];
+    Serial.begin(9600);
+    Serial.println("======");
+    String data = wifi -> get("/api/get/qr_code/iot_login/n5FNqS");
+    Serial.println("======");
+    data = data.substring(data.lastIndexOf('\n') + 1);
+    display -> clear();
+    display -> fillRect(0, 0, 128, 64, WHITE);
+    Serial.println("data");
+    Serial.println(data);
+    for (int i = 0; i < 29; i++)
+        for (int j = 0; j < 29; j++)
+          if (data[i * 29 + j] == '1')
+            display -> fillRect(2 * j, 2 * i, 2, 2, BLACK);
+    display -> update();
+    while(1) {
+        keyboard -> update(key);
+        delay(40);
+        if (key[KB_Cancel] == 1) {
+            return 1;
+        }
+    }
+    return 1;
+}
+
+int test_qr_code2(Menu *m) {
+    int key[num_input];
+    QRCode qrcode;
+    uint8_t qrcodeBytes[qrcode_getBufferSize(3)];
+    show_QR_CODE(3, "http://mantels.top/user_base/wechat/signin/" + student_key);
+    while(1) {
+        keyboard -> update(key);
+        delay(40);
+        if (key[KB_Cancel] == 1) {
+            return 1;
+        }
+    }
+    return 1;
+}
+
+void show_QR_CODE(int version, String data) {
+    QRCode qrcode;
+    char c_data[100];
+    for (int i = 0; i < data.length(); i++)
+      c_data[i] = data[i];
+    c_data[data.length()] = '\0';
+    uint8_t qrcodeBytes[qrcode_getBufferSize(version)];
+    qrcode_initText(&qrcode, qrcodeBytes, version, ECC_LOW, c_data);
+    display -> clear();
+    display -> fillRect(0, 0, 128, 64, WHITE);
+    for (uint8 y = 0; y < qrcode.size; y++) {
+        for (uint8 x = 0; x < qrcode.size; x++) {
+            if (qrcode_getModule(&qrcode, x, y))
+                display -> fillRect(35 + 2 * x, 3 + 2 * y, 2, 2, BLACK);
+        }
+    }
+    display -> update();
+}
 

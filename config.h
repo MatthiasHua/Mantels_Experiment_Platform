@@ -14,7 +14,7 @@
 #define dPASSWORD "password";
 
 //是否打开DEUG模式
-#define DEBUG 0
+#define DEBUG 1
 
 //==================================
 
@@ -48,7 +48,9 @@
 //下
 #define KB_Down 2
 //左
+#define KB_Left 1
 //右
+#define KB_Right 3
 //确定
 #define KB_Enter 4
 //取消

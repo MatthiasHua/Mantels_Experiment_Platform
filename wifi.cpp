@@ -62,8 +62,13 @@ String Wifi::get_student_key(String ak) {
     return returndata;
 }
 
-String Wifi::get_student_key_status(String sk) {
-    String data = get("/api/get/student_key_status/" + sk);
+String Wifi::get_student_key_status(String sk, WiFiClient &client) {
+    String data = get_unblock("/api/get/student_key_status/" + sk, client);
+    log_s("==");
+    log_s(client.connected());
+    log_s("==");
+    log_s("data:");
+    log_s(data);
     return data;
 }
 
@@ -81,7 +86,7 @@ String Wifi::get(String url) {
     log_s("connecting to ");  
     log_s(host);  
     
-    WiFiClient client;  
+    WiFiClient  client;  
     
     if (!client.connect(host, port)) {  
         log_s("connection failed");  
@@ -106,11 +111,35 @@ String Wifi::get(String url) {
      delay(100); 
 }
 
+String Wifi::get_unblock(String url, WiFiClient  &client) {
+    if (client.connected()) {
+        log_s("connected");
+        if (client.available()) {
+            String data = client.readString();
+            client.stop();
+            return data;
+        }
+        else 
+            return "\nnot available";
+    }
+    else {
+        if (!client.connect(host, port)) {
+            return "\n233";
+        }
+        String getRequest =(String)("GET ") + url + " HTTP/1.1\r\n" +  
+          "Host: " + host + ":" + port + "\r\n" +              
+          "Connection: close\r\n\r\n";  
+        client.print(getRequest);  
+        return "\n233";
+    }
+}
+
+
 String Wifi::post(String data, String url) {
     log_s("connecting to ");  
     log_s(host);  
     
-    WiFiClient client;  
+    WiFiClient  client;  
     
     if (!client.connect(host, port)) {  
         log_s("connection failed");  
@@ -131,9 +160,11 @@ String Wifi::post(String data, String url) {
             String returndata = client.readString();
             log_s(returndata);
             client.stop();
-            log_s("end of client");
+            log_s("end of &client");
             return returndata;
         }
      }
      delay(100); 
 }
+
+
